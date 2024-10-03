@@ -1,6 +1,13 @@
+"use client";
+
 import { Room } from "./Room";
 import { CollaborativeApp } from "./CollaborativeApp";
+import Live from "@/components/Live";
 
 export default function Page() {
-  return <h1 className="text-3xl">hello coleagues!</h1>;
+  return (
+    <div>
+      <Live />
+    </div>
+  );
 }

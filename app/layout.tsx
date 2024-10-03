@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${work_sans.className} bg-primary-grey-200 antialiased`}
+        className={`${work_sans.className} bg-primary-grey-200 antialiased overflow-hidden`}
       >
         <Room>{children}</Room>
       </body>
