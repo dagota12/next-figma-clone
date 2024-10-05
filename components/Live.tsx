@@ -4,6 +4,7 @@ import {
   useMyPresence,
   useOthers,
 } from "@liveblocks/react";
+
 import LiveCursors from "./cursor/LiveCursors";
 import { useCallback, useEffect, useState } from "react";
 import CursorChat from "./cursor/CursorChat";
@@ -12,12 +13,17 @@ import ReactionSelector from "./reaction/ReactionButton";
 import FlyingReaction from "./reaction/FlyingReaction";
 import useInterval from "@/hooks/useInterval";
 
-const Live = () => {
+type Props = {
+  canvasRef: React.MutableRefObject<HTMLCanvasElement>;
+};
+const Live = ({ canvasRef }: Props) => {
   const others = useOthers();
   const [{ cursor }, updateMyPresence] = useMyPresence() as any;
   const [cursorState, setCursorState] = useState<CursorState>({
     mode: CursorMode.Hidden,
   });
+
+  //reactions
   const [reaction, setReaction] = useState<Reaction[]>([]);
   const setReactions = useCallback((reaction: string) => {
     setCursorState({ mode: CursorMode.Reaction, reaction, isPressed: false });
@@ -146,6 +152,7 @@ const Live = () => {
   }, [updateMyPresence]);
   return (
     <div
+      id="canvas"
       onPointerMove={handlePointerMove}
       onPointerDown={handlePointerDown}
       onPointerLeave={handlePointerLeave}
@@ -154,7 +161,7 @@ const Live = () => {
       //   className=" w-4 h-4 bg-red-500"
       // className="bg-red-500 w-full h-screen flex justify-center items-center text-center"
     >
-      <h1 className="text-3xl">hello coleagues!</h1>
+      <canvas ref={canvasRef} />
       {reaction.map((r) => {
         return (
           <FlyingReaction

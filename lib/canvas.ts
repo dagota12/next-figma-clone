@@ -1,4 +1,4 @@
-import { fabric } from "fabric";
+import * as fabric from "fabric"; // v6
 import { v4 as uuid4 } from "uuid";
 
 import {
@@ -26,6 +26,7 @@ export const initializeFabric = ({
   const canvasElement = document.getElementById("canvas");
 
   // create fabric canvas
+
   const canvas = new fabric.Canvas(canvasRef.current, {
     width: canvasElement?.clientWidth,
     height: canvasElement?.clientHeight,
@@ -386,8 +387,8 @@ export const handleResize = ({ canvas }: { canvas: fabric.Canvas | null }) => {
   const canvasElement = document.getElementById("canvas");
   if (!canvasElement) return;
 
-  if (!canvas) return;
-
+  if (!canvas || typeof canvas.setDimensions != "function") return;
+  console.log(typeof canvas.setDimensions);
   canvas.setDimensions({
     width: canvasElement.clientWidth,
     height: canvasElement.clientHeight,
