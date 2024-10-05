@@ -1,0 +1,13 @@
+.more {
+  border-width: 4px;
+  border-radius: 9999px;
+  border-color: white;
+  background-color: #9ca3af;
+  width: 40px;
+  height: 40px;
+  margin-left: -0.75rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}

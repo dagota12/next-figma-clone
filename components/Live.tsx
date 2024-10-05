@@ -68,7 +68,7 @@ const Live = () => {
     setReaction((reaction) =>
       reaction.filter((r) => Date.now() - r.timestamp < 4000)
     );
-  }, 1000);
+  }, 2000);
   const handlePointerMove = useCallback((event: React.PointerEvent) => {
     if (cursor == null || cursorState.mode != CursorMode.ReactionSelector) {
       event.preventDefault();
