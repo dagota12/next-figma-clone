@@ -19,9 +19,13 @@ import {
   renderCanvas,
 } from "@/lib/canvas";
 import { ActiveElement } from "@/types/type";
-import { useMutation, useStorage } from "@liveblocks/react";
+import { useMutation, useRedo, useStorage, useUndo } from "@liveblocks/react";
+import { defaultNavElement } from "@/constants";
+import { handleDelete, handleKeyDown } from "@/lib/key-events";
 
 export default function Page() {
+  const undo = useUndo();
+  const redo = useRedo();
   //canvas refs
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<fabric.Canvas | null>(null);
@@ -47,9 +51,37 @@ export default function Page() {
     value: "",
     icon: "",
   });
+  const deleteAllShapes = useMutation(({ storage }) => {
+    const canvasObjects = storage.get("canvasObjects");
+    if (!canvasObjects || canvasObjects.size === 0) return true;
+
+    for (const [key, value] of canvasObjects.entries()) {
+      canvasObjects.delete(key);
+    }
+    return canvasObjects.size === 0;
+  }, []);
+  const deleteShapeFromStorage = useMutation(({ storage }, objectId) => {
+    const canvasObjects = storage.get("canvasObjects");
+
+    canvasObjects.delete(objectId);
+  }, []);
   const handleActiveElemet = (elem: ActiveElement) => {
-    setActiveElement(elem);
-    selectedShapeRef.current = elem?.value as string;
+    switch (elem?.value) {
+      case "reset":
+        deleteAllShapes();
+        fabricRef.current?.clear();
+        setActiveElement(defaultNavElement);
+        break;
+      case "delete":
+        handleDelete(fabricRef.current as any, deleteShapeFromStorage);
+        setActiveElement(defaultNavElement);
+        break;
+
+      default:
+        setActiveElement(elem);
+        selectedShapeRef.current = elem?.value as string;
+        break;
+    }
   };
   useEffect(() => {
     const canvas = initializeFabric({ fabricRef, canvasRef });
@@ -86,11 +118,25 @@ export default function Page() {
     canvas.on("object:modified", (options: any) => {
       handleCanvasObjectModified({ options, syncShapeInStorage });
     });
-    const resizeListener = window.addEventListener("resize", () => {
+
+    window.addEventListener("resize", () => {
       handleResize({ canvas: fabricRef.current });
+    });
+    window.addEventListener("keydown", (e) => {
+      handleKeyDown({
+        e,
+        canvas: fabricRef.current,
+        undo,
+        redo,
+        syncShapeInStorage,
+        deleteShapeFromStorage,
+      });
     });
     return () => {
       canvas.dispose();
+      window.removeEventListener("resize", () => {
+        handleResize({ canvas: fabricRef.current });
+      });
     };
   }, []);
   useEffect(() => {
@@ -106,7 +152,9 @@ export default function Page() {
         handleActiveElement={handleActiveElemet}
       />
       <section className="h-full flex">
-        <LeftSidebar />
+        <LeftSidebar
+          allShapes={canvasObjects && (Array.from(canvasObjects) as any)}
+        />
         <Live canvasRef={canvasRef} />
         <RightSidebar />
       </section>
