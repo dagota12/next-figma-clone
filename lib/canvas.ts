@@ -335,52 +335,57 @@ export const handleCanvasObjectScaling = ({
   }));
 };
 
-// render canvas objects coming from storage on canvas
 export const renderCanvas = ({
   fabricRef,
   canvasObjects,
   activeObjectRef,
 }: RenderCanvas) => {
-  // clear canvas
-  // if (!canvasObjects) return;
-  fabricRef.current?.clear();
+  // console.log("rendering objects", canvasObjects);
 
-  // render all objects on canvas
+  // Ensure fabricRef is defined
+  if (!fabricRef.current) {
+    console.error("Fabric ref is not defined");
+    return;
+  }
+
+  // Clear canvas before rendering new objects
+  fabricRef.current.clear();
+
+  // Iterate through all objects stored in canvasObjects
   Array.from(canvasObjects, ([objectId, objectData]) => {
-    /**
-     * enlivenObjects() is used to render objects on canvas.
-     * It takes two arguments:
-     * 1. objectData: object data to render on canvas
-     * 2. callback: callback function to execute after rendering objects
-     * on canvas
-     *
-     * enlivenObjects: http://fabricjs.com/docs/fabric.util.html#.enlivenObjectEnlivables
-     */
-    fabric.util.enlivenObjects(
-      [objectData],
-      (enlivenedObjects: fabric.Object[]) => {
-        enlivenedObjects.forEach((enlivenedObj) => {
-          // if element is active, keep it in active state so that it can be edited further
-          if (activeObjectRef.current?.objectId === objectId) {
-            fabricRef.current?.setActiveObject(enlivenedObj);
-          }
+    // Make sure objectData is in the correct format
+    if (!objectData || typeof objectData !== "object") {
+      console.error(`Invalid object data for ${objectId}`);
+      return;
+    }
 
-          // add object to canvas
-          fabricRef.current?.add(enlivenedObj);
-        });
-      },
-      /**
-       * specify namespace of the object for fabric to render it on canvas
-       * A namespace is a string that is used to identify the type of
-       * object.
-       *
-       * Fabric Namespace: http://fabricjs.com/docs/fabric.html
-       */
-      "fabric"
-    );
+    /**
+     * enlivenObjects() will revive objectData into actual Fabric.js objects.
+     * The third argument is the namespace.
+     */
+    fabric.util.enlivenObjects([objectData]).then((enlivenedObjects) => {
+      // console.log("Enlivened objects:", enlivenedObjects);
+
+      // Add each enlivened object to the canvas
+      enlivenedObjects.forEach((enlivenedObj) => {
+        // If the object is the active object, set it active
+        if (activeObjectRef.current?.objectId === objectId) {
+          fabricRef.current?.setActiveObject(enlivenedObj);
+        }
+
+        // Add object to canvas
+        fabricRef.current?.add(enlivenedObj);
+      });
+
+      // Render the updated canvas
+      fabricRef.current?.renderAll();
+    });
   });
 
-  fabricRef.current?.renderAll();
+  // Final render after all objects are added
+  // fabricRef.current.renderAll();
+
+  // console.log("Fabric ref", fabricRef.current);
 };
 
 // resize canvas dimensions on window resize

@@ -95,7 +95,7 @@ export default function Page() {
   }, []);
   useEffect(() => {
     if (!canvasObjects) return;
-    console.log("canvasObjects", canvasObjects);
+    // console.log("canvasObjects", canvasObjects);
 
     renderCanvas({ fabricRef, canvasObjects, activeObjectRef });
   }, [canvasObjects]);
